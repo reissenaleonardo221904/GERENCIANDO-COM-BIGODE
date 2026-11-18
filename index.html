@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gerenciando com BIGODE • Automação de Ofertas</title>
+  <style>
+    :root {
+      --bg: #090d16;
+      --card: #111827;
+      --card-hover: #1a2333;
+      --border: #1f2937;
+      --gold: #f59e0b;
+      --green: #10b981;
+      --green-dark: #059669;
+      --red: #ef4444;
+      --text: #f3f4f6;
+      --muted: #9ca3af;
+    }
+
+    * { box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      padding-bottom: 60px;
+    }
+
+    header {
+      background: linear-gradient(180deg, #0f172a 0%, #090d16 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 20px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-badge {
+      background: var(--gold);
+      color: #000;
+      font-weight: 900;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 18px;
+      letter-spacing: 1px;
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 800;
+    }
+
+    .brand span {
+      font-size: 12px;
+      color: var(--muted);
+      display: block;
+    }
+
+    .status-bar {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      background: var(--card);
+      padding: 10px 16px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+    }
+
+    .clock {
+      font-family: monospace;
+      font-size: 18px;
+      font-weight: bold;
+      color: var(--gold);
+    }
+
+    .btn-master {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      font-weight: 800;
+      cursor: pointer;
+      font-size: 14px;
+      transition: 0.2s;
+    }
+
+    .btn-master.off { background: var(--green); color: #052e16; }
+    .btn-master.on { background: var(--red); color: #fff; box-shadow: 0 0 15px rgba(239,68,68,0.4); }
+
+    .container {
+      max-width: 1150px;
+      margin: 25px auto;
+      padding: 0 15px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    @media (max-width: 850px) {
+      .container { grid-template-columns: 1fr; }
+    }
+
+    .panel {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+    }
+
+    .panel.full { grid-column: 1 / -1; }
+
+    .panel h2 {
+      margin: 0 0 15px 0;
+      font-size: 16px;
+      color: var(--gold);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 10px;
+    }
+
+    label {
+      display: block;
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 5px;
+      margin-top: 12px;
+    }
+
+    input[type="text"], input[type="time"], input[type="file"], textarea {
+      width: 100%;
+      background: #0b1120;
+      border: 1px solid #374151;
+      color: #fff;
+      padding: 10px;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+
+    .row-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .btn {
+      background: #1f2937;
+      color: #fff;
+      border: 1px solid #374151;
+      padding: 10px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 13px;
+      transition: 0.2s;
+    }
+
+    .btn:hover { background: #374151; }
+    .btn-green { background: var(--green); color: #052e16; border: none; }
+    .btn-green:hover { background: var(--green-dark); color: #fff; }
+    .btn-gold { background: var(--gold); color: #000; border: none; }
+
+    /* Lista de Grupos */
+    .group-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #0b1120;
+      padding: 10px 12px;
+      border-radius: 8px;
+      margin-top: 8px;
+      border: 1px solid #1f2937;
+    }
+
+    .group-item label {
+      margin: 0;
+      color: var(--text);
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+    }
+
+    /* Grade de Produtos */
+    .products-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 15px;
+      margin-top: 15px;
+    }
+
+    .product-card {
+      background: #0b1120;
+      border: 1px solid #1f2937;
+      border-radius: 10px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .photo-box {
+      width: 100%;
+      height: 160px;
+      background: #111827;
+      border: 2px dashed #374151;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      position: relative;
+      cursor: pointer;
+    }
+
+    .photo-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .photo-box span {
+      font-size: 12px;
+      color: var(--muted);
+      text-align: center;
+      padding: 10px;
+    }
+
+    .price-tag {
+      color: var(--green);
+      font-weight: 800;
+      font-size: 16px;
+    }
+
+    .log-box {
+      background: #05080f;
+      border: 1px solid #1f2937;
+      border-radius: 8px;
+      padding: 12px;
+      height: 130px;
+      overflow-y: auto;
+      font-family: monospace;
+      font-size: 12px;
+      color: #34d399;
+    }
+
+    .hint {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 6px;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <div class="brand-badge">BIGODE</div>
+    <div>
+      <h1>Gerenciando com BIGODE</h1>
+      <span>Automação de Ofertas & Disparos em Grupos</span>
+    </div>
+  </div>
+
+  <div class="status-bar">
+    <div>
+      <div style="font-size:10px; color:var(--muted);">HORA ATUAL</div>
+      <div class="clock" id="relogio">00:00:00</div>
+    </div>
+    <button id="btnMaster" class="btn-master off" onclick="toggleRobo()">▶ ATIVAR ROBÔ</button>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- 1. IMPORTAR PLANILHA -->
+  <div class="panel">
+    <h2>1. Subir Planilha de Produtos</h2>
+    <label>Arquivo CSV (Colunas: Nome, Preço, Descrição):</label>
+    <input type="file" id="csvFile" accept=".csv" onchange="importarCSV(event)" />
+    <div class="hint">Dica: No Excel ou Google Planilhas, clique em "Salvar como / Baixar como CSV (.csv)".</div>
+
+    <div style="margin-top: 15px; display: flex; gap: 8px; flex-wrap: wrap;">
+      <button class="btn" onclick="baixarModeloCSV()">⬇ Baixar Planilha Modelo</button>
+      <button class="btn" onclick="adicionarProdutoManual()">+ Adicionar Item Manual</button>
+      <button class="btn" style="color:var(--red);" onclick="limparProdutos()">Limpar Tudo</button>
+    </div>
+  </div>
+
+  <!-- 2. HORÁRIOS & GRUPOS -->
+  <div class="panel">
+    <h2>2. Horários & Grupos Alvo</h2>
+    <div class="row-2">
+      <div>
+        <label>1º Horário de Postagem:</label>
+        <input type="time" id="hora1" value="08:00" onchange="salvarConfig()" />
+      </div>
+      <div>
+        <label>2º Horário de Postagem:</label>
+        <input type="time" id="hora2" value="18:00" onchange="salvarConfig()" />
+      </div>
+    </div>
+
+    <label>Adicionar Grupo do WhatsApp:</label>
+    <div style="display:flex; gap:8px;">
+      <input type="text" id="novoGrupoNome" placeholder="Nome do Grupo (ex: Ofertas VIP)" />
+      <input type="text" id="novoGrupoId" placeholder="ID do Grupo (ex: 120363...@g.us)" />
+      <button class="btn btn-gold" onclick="adicionarGrupo()">+</button>
+    </div>
+
+    <div id="listaGrupos" style="margin-top: 10px;"></div>
+  </div>
+
+  <!-- 3. PRODUTOS CARREGADOS (FOTOS E DESCRIÇÃO) -->
+  <div class="panel full">
+    <h2>
+      <span>3. Catálogo Carregado (<span id="qtdProdutos">0</span> itens)</span>
+      <button class="btn btn-green" onclick="dispararTodosAgora()">🚀 Testar Disparo Agora</button>
+    </h2>
+    <div class="hint">Clique na caixa de imagem de cada produto para subir a foto e ajuste a descrição antes de ativar o robô.</div>
+    <div class="products-grid" id="gridProdutos"></div>
+  </div>
+
+  <!-- 4. CONEXÃO API & LOGS -->
+  <div class="panel full">
+    <h2>4. Conexão WhatsApp & Histórico de Execução</h2>
+    <div class="row-2" style="margin-bottom: 12px;">
+      <div>
+        <label>URL da API WhatsApp (Evolution API / Z-API - opcional para teste):</label>
+        <input type="text" id="apiUrl" placeholder="https://sua-api.com/message/sendMedia/instancia" onchange="salvarConfig()" />
+      </div>
+      <div>
+        <label>API Key / Token:</label>
+        <input type="text" id="apiKey" placeholder="Seu token de acesso" onchange="salvarConfig()" />
+      </div>
+    </div>
+    <div class="log-box" id="logBox">[Sistema] Painel Gerenciando com BIGODE pronto. Suba sua planilha ou adicione itens.</div>
+  </div>
+
+</div>
+
+<script>
+  let produtos = JSON.parse(localStorage.getItem('bigode_produtos') || '[]');
+  let grupos = JSON.parse(localStorage.getItem('bigode_grupos') || '[{"id":"1203630001@g.us","nome":"Grupo Ofertas Principal","ativo":true}]');
+  let roboAtivo = false;
+  let ultimoDisparoMinuto = "";
+
+  // Inicialização
+  document.getElementById('hora1').value = localStorage.getItem('bigode_hora1') || '08:00';
+  document.getElementById('hora2').value = localStorage.getItem('bigode_hora2') || '18:00';
+  document.getElementById('apiUrl').value = localStorage.getItem('bigode_apiUrl') || '';
+  document.getElementById('apiKey').value = localStorage.getItem('bigode_apiKey') || '';
+
+  function log(msg) {
+    const box = document.getElementById('logBox');
+    const hora = new Date().toLocaleTimeString();
+    box.innerHTML += `<br>[${hora}] ${msg}`;
+    box.scrollTop = box.scrollHeight;
+  }
+
+  function salvarDados() {
+    try {
+      localStorage.setItem('bigode_produtos', JSON.stringify(produtos));
+      localStorage.setItem('bigode_grupos', JSON.stringify(grupos));
+    } catch (e) {
+      log("⚠️ Aviso: Muitas fotos pesadas para o cache local. Use imagens compactas.");
+    }
+  }
+
+  function salvarConfig() {
+    localStorage.setItem('bigode_hora1', document.getElementById('hora1').value);
+    localStorage.setItem('bigode_hora2', document.getElementById('hora2').value);
+    localStorage.setItem('bigode_apiUrl', document.getElementById('apiUrl').value);
+    localStorage.setItem('bigode_apiKey', document.getElementById('apiKey').value);
+    log("Configurações de horário/API salvas.");
+  }
+
+  // --- PLANILHA CSV ---
+  function baixarModeloCSV() {
+    const csv = "Nome;Preco;Descricao\nFone Bluetooth Pro;79,90;Bateria de longa duração com garantia\nSmartwatch Ultra;149,00;Recebe notificações e faz chamadas";
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "modelo_produtos_bigode.csv";
+    link.click();
+  }
+
+  function importarCSV(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const linhas = e.target.result.split(/\r?\n/).filter(l => l.trim() !== '');
+      let novos = 0;
+      for (let i = 1; i < linhas.length; i++) {
+        const sep = linhas[i].includes(';') ? ';' : ',';
+        const cols = linhas[i].split(sep);
+        if (cols[0]) {
+          produtos.push({
+            id: Date.now() + i,
+            nome: cols[0].trim(),
+            preco: (cols[1] || '0,00').trim(),
+            descricao: (cols[2] || '').trim(),
+            foto: ''
+          });
+          novos++;
+        }
+      }
+      salvarDados();
+      renderProdutos();
+      log(`✅ ${novos} produtos importados da planilha!`);
+    };
+    reader.readAsText(file, 'UTF-8');
+  }
+
+  function adicionarProdutoManual() {
+    produtos.push({
+      id: Date.now(),
+      nome: "Novo Produto",
+      preco: "99,90",
+      descricao: "Pronta entrega! Chama no privado.",
+      foto: ""
+    });
+    salvarDados();
+    renderProdutos();
+  }
+
+  function limparProdutos() {
+    if (confirm("Apagar todos os produtos carregados?")) {
+      produtos = [];
+      salvarDados();
+      renderProdutos();
+      log("Catálogo limpo.");
+    }
+  }
+
+  // --- RENDERIZAR PRODUTOS ---
+  function renderProdutos() {
+    const grid = document.getElementById('gridProdutos');
+    document.getElementById('qtdProdutos').textContent = produtos.length;
+    grid.innerHTML = '';
+
+    produtos.forEach((p, idx) => {
+      const card = document.createElement('div');
+      card.className = 'product-card';
+      card.innerHTML = `
+        <div class="photo-box" onclick="document.getElementById('fotoInput_${idx}').click()">
+          ${p.foto ? `<img src="${p.foto}" />` : `<span>📷 Clique para subir a foto<br>deste produto</span>`}
+          <input type="file" id="fotoInput_${idx}" accept="image/*" style="display:none" onchange="uploadFoto(event, ${idx})" />
+        </div>
+        <input type="text" value="${p.nome}" onchange="editarCampo(${idx}, 'nome', this.value)" placeholder="Nome do produto" />
+        <input type="text" value="${p.preco}" onchange="editarCampo(${idx}, 'preco', this.value)" placeholder="Preço (ex: 99,90)" />
+        <textarea rows="2" onchange="editarCampo(${idx}, 'descricao', this.value)" placeholder="Descrição da oferta">${p.descricao}</textarea>
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span class="price-tag">R$ ${p.preco}</span>
+          <button class="btn" style="padding:5px 10px; color:var(--red);" onclick="removerProduto(${idx})">Excluir</button>
+        </div>
+      `;
+      grid.appendChild(card);
+    });
+  }
+
+  function uploadFoto(event, idx) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      produtos[idx].foto = e.target.result;
+      salvarDados();
+      renderProdutos();
+      log(`📸 Foto adicionada ao item: ${produtos[idx].nome}`);
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function editarCampo(idx, campo, valor) {
+    produtos[idx][campo] = valor;
+    salvarDados();
+  }
+
+  function removerProduto(idx) {
+    produtos.splice(idx, 1);
+    salvarDados();
+    renderProdutos();
+  }
+
+  // --- GRUPOS ---
+  function renderGrupos() {
+    const div = document.getElementById('listaGrupos');
+    div.innerHTML = '';
+    grupos.forEach((g, idx) => {
+      div.innerHTML += `
+        <div class="group-item">
+          <label>
+            <input type="checkbox" ${g.ativo ? 'checked' : ''} onchange="toggleGrupo(${idx})" />
+            <span><strong>${g.nome}</strong> <small style="color:var(--muted)">(${g.id})</small></span>
+          </label>
+          <button class="btn" style="padding:4px 8px; font-size:11px;" onclick="removerGrupo(${idx})">X</button>
+        </div>
+      `;
+    });
+  }
+
+  function adicionarGrupo() {
+    const nome = document.getElementById('novoGrupoNome').value.trim();
+    const id = document.getElementById('novoGrupoId').value.trim();
+    if (!nome || !id) return alert("Preencha o nome e o ID do grupo!");
+    grupos.push({ nome, id, ativo: true });
+    document.getElementById('novoGrupoNome').value = '';
+    document.getElementById('novoGrupoId').value = '';
+    salvarDados();
+    renderGrupos();
+  }
+
+  function toggleGrupo(idx) {
+    grupos[idx].ativo = !grupos[idx].ativo;
+    salvarDados();
+  }
+
+  function removerGrupo(idx) {
+    grupos.splice(idx, 1);
+    salvarDados();
+    renderGrupos();
+  }
+
+  // --- MOTOR DE AGENDAMENTO E DISPARO ---
+  function toggleRobo() {
+    const gruposAtivos = grupos.filter(g => g.ativo);
+    if (!roboAtivo) {
+      if (produtos.length === 0) return alert("Suba sua planilha ou adicione pelo menos 1 produto antes de ativar!");
+      if (gruposAtivos.length === 0) return alert("Selecione pelo menos 1 grupo alvo!");
+    }
+
+    roboAtivo = !roboAtivo;
+    const btn = document.getElementById('btnMaster');
+    if (roboAtivo) {
+      btn.textContent = "⏹ ROBÔ ATIVO (CLIQUE P/ PAUSAR)";
+      btn.className = "btn-master on";
+      log(`🟢 ROBÔ ATIVADO! Agendado para ${document.getElementById('hora1').value} e ${document.getElementById('hora2').value} em ${gruposAtivos.length} grupo(s).`);
+    } else {
+      btn.textContent = "▶ ATIVAR ROBÔ";
+      btn.className = "btn-master off";
+      log("🔴 Robô pausado.");
+    }
+  }
+
+  async function dispararTodosAgora() {
+    const gruposAtivos = grupos.filter(g => g.ativo);
+    if (produtos.length === 0 || gruposAtivos.length === 0) {
+      return alert("Verifique se há produtos cadastrados e grupos selecionados.");
+    }
+
+    const apiUrl = document.getElementById('apiUrl').value.trim();
+    const apiKey = document.getElementById('apiKey').value.trim();
+
+    log(`🚀 Iniciando rodada de postagens (${produtos.length} produtos x ${gruposAtivos.length} grupos)...`);
+
+    for (const grupo of gruposAtivos) {
+      for (const prod of produtos) {
+        const legenda = `🔥 *${prod.nome.toUpperCase()}*\n💰 *Por apenas: R$ ${prod.preco}*\n\n${prod.descricao}\n\n👇 *Chame no privado para garantir!*`;
+
+        if (apiUrl) {
+          try {
+            await fetch(apiUrl, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'apikey': apiKey },
+              body: JSON.stringify({
+                number: grupo.id,
+                mediatype: "image",
+                caption: legenda,
+                media: prod.foto
+              })
+            });
+            log(`✅ Enviado via API: "${prod.nome}" -> ${grupo.nome}`);
+          } catch (err) {
+            log(`❌ Erro API em "${prod.nome}": ${err.message}`);
+          }
+        } else {
+          log(`📤 [Simulação] Postado "${prod.nome}" (R$ ${prod.preco}) no grupo "${grupo.nome}"`);
+        }
+
+        // Pausa de 2 segundos entre itens para evitar bloqueio
+        await new Promise(r => setTimeout(r, 2000));
+      }
+    }
+    log("🏁 Rodada finalizada com sucesso!");
+  }
+
+  // Relógio e verificador automático a cada segundo
+  setInterval(() => {
+    const agora = new Date();
+    const hh = String(agora.getHours()).padStart(2, '0');
+    const mm = String(agora.getMinutes()).padStart(2, '0');
+    const ss = String(agora.getSeconds()).padStart(2, '0');
+    const horaAtual = `${hh}:${mm}`;
+
+    document.getElementById('relogio').textContent = `${hh}:${mm}:${ss}`;
+
+    if (roboAtivo && ss === '00' && ultimoDisparoMinuto !== horaAtual) {
+      const h1 = document.getElementById('hora1').value;
+      const h2 = document.getElementById('hora2').value;
+      if (horaAtual === h1 || horaAtual === h2) {
+        ultimoDisparoMinuto = horaAtual;
+        log(`⏰ Horário agendado atingido (${horaAtual})! Disparando catálogo...`);
+        dispararTodosAgora();
+      }
+    }
+  }, 1000);
+
+  renderGrupos();
+  renderProdutos();
+</script>
+</body>
+</html>
