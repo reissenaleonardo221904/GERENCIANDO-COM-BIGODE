@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Gerenciando com BIGODE • Automação de Ofertas</title>
+  <title>Gerenciando com BIGODE • Mutirão por Produto</title>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <style>
     :root {
@@ -20,293 +20,103 @@
     }
 
     * { box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
-    body {
-      margin: 0;
-      background: var(--bg);
-      color: var(--text);
-      padding-bottom: 60px;
-    }
+    body { margin: 0; background: var(--bg); color: var(--text); padding-bottom: 60px; }
 
     header {
       background: linear-gradient(180deg, #0f172a 0%, #090d16 100%);
       border-bottom: 1px solid var(--border);
       padding: 18px 24px;
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: space-between;
-      align-items: center;
-      gap: 15px;
+      display: flex; justify-content: space-between; align-items: center; gap: 15px; flex-wrap: wrap;
     }
 
     .brand { display: flex; align-items: center; gap: 12px; }
     .brand-badge {
-      background: var(--gold);
-      color: #000;
-      font-weight: 900;
-      padding: 8px 14px;
-      border-radius: 8px;
-      font-size: 18px;
-      letter-spacing: 1px;
+      background: var(--gold); color: #000; font-weight: 900;
+      padding: 8px 14px; border-radius: 8px; font-size: 18px; letter-spacing: 1px;
     }
     .brand h1 { margin: 0; font-size: 20px; font-weight: 800; }
     .brand span { font-size: 12px; color: var(--muted); display: block; }
 
-    .status-bar {
-      display: flex;
-      align-items: center;
-      gap: 15px;
-      background: var(--card);
-      padding: 10px 16px;
-      border-radius: 10px;
-      border: 1px solid var(--border);
-    }
-
-    .clock { font-family: monospace; font-size: 18px; font-weight: bold; color: var(--gold); }
-
-    .btn-master {
-      padding: 10px 20px;
-      border: none;
-      border-radius: 8px;
-      font-weight: 800;
-      cursor: pointer;
-      font-size: 14px;
-      transition: 0.2s;
-    }
-    .btn-master.off { background: var(--green); color: #052e16; }
-    .btn-master.on { background: var(--red); color: #fff; box-shadow: 0 0 15px rgba(239,68,68,0.4); }
-
     .container {
-      max-width: 1220px;
-      margin: 24px auto;
-      padding: 0 15px;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 20px;
+      max-width: 1220px; margin: 24px auto; padding: 0 15px;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 20px;
     }
-
     @media (max-width: 900px) { .container { grid-template-columns: 1fr; } }
 
     .panel {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 20px;
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 12px; padding: 20px;
     }
     .panel.full { grid-column: 1 / -1; }
 
     .panel h2 {
-      margin: 0 0 15px 0;
-      font-size: 16px;
-      color: var(--gold);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-bottom: 1px solid var(--border);
-      padding-bottom: 10px;
-      gap: 10px;
-      flex-wrap: wrap;
+      margin: 0 0 15px 0; font-size: 16px; color: var(--gold);
+      display: flex; justify-content: space-between; align-items: center;
+      border-bottom: 1px solid var(--border); padding-bottom: 10px; gap: 10px; flex-wrap: wrap;
     }
 
-    label {
-      display: block;
-      font-size: 12px;
-      color: var(--muted);
-      margin-bottom: 4px;
-      margin-top: 10px;
-    }
-
-    input[type="text"], input[type="number"], input[type="time"], input[type="file"], select, textarea {
-      width: 100%;
-      background: var(--card-inner);
-      border: 1px solid #374151;
-      color: #fff;
-      padding: 9px 10px;
-      border-radius: 8px;
-      font-size: 13px;
+    label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 4px; margin-top: 10px; }
+    input[type="text"], input[type="number"], select, textarea {
+      width: 100%; background: var(--card-inner); border: 1px solid #374151;
+      color: #fff; padding: 9px 10px; border-radius: 8px; font-size: 13px;
     }
 
     .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-    .row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
 
     .btn {
-      background: #1f2937;
-      color: #fff;
-      border: 1px solid #374151;
-      padding: 9px 14px;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: 600;
-      font-size: 13px;
-      transition: 0.2s;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
+      background: #1f2937; color: #fff; border: 1px solid #374151;
+      padding: 9px 14px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 13px;
+      transition: 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 6px;
     }
     .btn:hover { background: #374151; }
     .btn-green { background: var(--green); color: #052e16; border: none; font-weight: 800; }
     .btn-green:hover { background: var(--green-dark); color: #fff; }
     .btn-gold { background: var(--gold); color: #000; border: none; font-weight: 800; }
-    .btn-gold:hover { opacity: 0.9; }
 
-    /* Área de QR Code estilo WhatsApp Web */
-    .wa-connect-box {
-      display: grid;
-      grid-template-columns: 220px 1fr;
-      gap: 20px;
-      align-items: center;
-      background: var(--card-inner);
-      padding: 16px;
-      border-radius: 10px;
-      border: 1px solid #1f2937;
+    .drop-zone {
+      border: 2px dashed var(--gold); background: rgba(245, 158, 11, 0.06);
+      border-radius: 10px; padding: 22px 15px; text-align: center; cursor: pointer; margin-top: 10px;
     }
-    @media (max-width: 650px) { .wa-connect-box { grid-template-columns: 1fr; } }
+    .drop-zone:hover { background: rgba(245, 158, 11, 0.16); }
 
-    .qr-frame {
-      width: 210px;
-      height: 210px;
-      background: #fff;
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 0 auto;
-      padding: 10px;
-      color: #111;
-      text-align: center;
-      font-size: 12px;
-      font-weight: 600;
-      overflow: hidden;
+    /* Painel do Mutirão por Produto */
+    .ghost-panel {
+      background: #091a14; border: 2px solid var(--green); border-radius: 12px; padding: 18px; margin-top: 15px;
     }
-    .qr-frame img { width: 100%; height: 100%; object-fit: contain; }
 
-    .badge-status {
-      display: inline-block;
-      padding: 4px 10px;
-      border-radius: 20px;
-      font-size: 12px;
-      font-weight: 700;
-    }
-    .badge-offline { background: rgba(239,68,68,0.15); color: #f87171; border: 1px solid #ef4444; }
-    .badge-online { background: rgba(16,185,129,0.15); color: #34d399; border: 1px solid #10b981; }
-
-    /* Grupos */
     .group-item {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      background: var(--card-inner);
-      padding: 10px 12px;
-      border-radius: 8px;
-      margin-top: 8px;
-      border: 1px solid #1f2937;
-    }
-    .group-item label {
-      margin: 0;
-      color: var(--text);
-      font-size: 14px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      cursor: pointer;
+      display: flex; align-items: center; justify-content: space-between;
+      background: var(--card-inner); padding: 10px 12px; border-radius: 8px; margin-top: 8px; border: 1px solid #1f2937;
     }
 
-    /* Produtos e Galeria Múltipla */
     .products-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-      gap: 16px;
-      margin-top: 15px;
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; margin-top: 15px;
     }
-
     .product-card {
-      background: var(--card-inner);
-      border: 1px solid #1f2937;
-      border-radius: 10px;
-      padding: 14px;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
+      background: var(--card-inner); border: 1px solid #374151; border-radius: 10px; padding: 14px;
+      display: flex; flex-direction: column; gap: 6px;
     }
     .product-card.inativo { opacity: 0.45; border-style: dashed; }
+    .card-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
 
-    .card-top {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 4px;
-    }
-
-    .gallery-area {
-      background: #111827;
-      border: 1px dashed #374151;
-      border-radius: 8px;
-      padding: 10px;
-    }
-
-    .gallery-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 8px;
-    }
-
-    .thumbs-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 6px;
-      max-height: 180px;
-      overflow-y: auto;
-    }
-
-    .thumb-item {
-      position: relative;
-      aspect-ratio: 1 / 1;
-      border-radius: 6px;
-      overflow: hidden;
-      border: 1px solid #374151;
-      background: #000;
-    }
+    .gallery-area { background: #111827; border: 1px dashed #374151; border-radius: 8px; padding: 10px; }
+    .gallery-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .thumbs-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; max-height: 180px; overflow-y: auto; }
+    .thumb-item { position: relative; aspect-ratio: 1/1; border-radius: 6px; overflow: hidden; border: 1px solid #374151; background: #000; }
     .thumb-item img { width: 100%; height: 100%; object-fit: cover; }
     .thumb-del {
-      position: absolute;
-      top: 2px;
-      right: 2px;
-      background: rgba(239, 68, 68, 0.9);
-      color: #fff;
-      border: none;
-      border-radius: 4px;
-      width: 18px;
-      height: 18px;
-      font-size: 11px;
-      font-weight: bold;
-      cursor: pointer;
-      line-height: 1;
+      position: absolute; top: 2px; right: 2px; background: rgba(239, 68, 68, 0.9); color: #fff;
+      border: none; border-radius: 4px; width: 18px; height: 18px; font-size: 11px; font-weight: bold; cursor: pointer;
     }
 
     .preview-msg {
-      background: #052e16;
-      border: 1px solid #065f46;
-      color: #d1fae5;
-      padding: 10px;
-      border-radius: 8px;
-      font-size: 12px;
-      white-space: pre-line;
-      margin-top: 6px;
+      background: #052e16; border: 1px solid #065f46; color: #d1fae5;
+      padding: 10px; border-radius: 8px; font-size: 12px; white-space: pre-line; margin-top: 6px;
     }
-
     .log-box {
-      background: #05080f;
-      border: 1px solid #1f2937;
-      border-radius: 8px;
-      padding: 12px;
-      height: 140px;
-      overflow-y: auto;
-      font-family: monospace;
-      font-size: 12px;
-      color: #34d399;
+      background: #05080f; border: 1px solid #1f2937; border-radius: 8px;
+      padding: 12px; height: 140px; overflow-y: auto; font-family: monospace; font-size: 12px; color: #34d399;
     }
-
     .hint { font-size: 11px; color: var(--muted); margin-top: 5px; }
   </style>
 </head>
@@ -317,140 +127,87 @@
     <div class="brand-badge">BIGODE</div>
     <div>
       <h1>Gerenciando com BIGODE</h1>
-      <span>Automação de Ofertas & Disparos em Grupos</span>
+      <span>Mutirão Inteligente • Disparo por Produto em Todos os Grupos</span>
     </div>
   </div>
 
   <div class="status-bar">
-    <div>
-      <div style="font-size:10px; color:var(--muted);">HORA ATUAL</div>
-      <div class="clock" id="relogio">00:00:00</div>
-    </div>
-    <button id="btnMaster" class="btn-master off" onclick="toggleRobo()">▶ ATIVAR ROBÔ</button>
+    <a href="https://web.whatsapp.com" target="_blank" class="btn btn-gold" style="padding:6px 12px; font-size:13px;">🔗 Abrir WhatsApp Web</a>
   </div>
 </header>
 
 <div class="container">
 
-  <!-- 1. CONEXÃO WHATSAPP WEB (QR CODE) -->
-  <div class="panel full">
-    <h2>
-      <span>1. Conectar WhatsApp (Estilo WhatsApp Web)</span>
-      <span id="waStatusBadge" class="badge-status badge-offline">🔴 Desconectado</span>
-    </h2>
-
-    <div class="wa-connect-box">
-      <div class="qr-frame" id="qrContainer">
-        <span>Clique em<br>"Gerar QR Code"<br>para conectar</span>
-      </div>
-
-      <div>
-        <div class="row-3">
-          <div>
-            <label>URL do Servidor / Evolution API:</label>
-            <input type="text" id="apiUrl" placeholder="https://sua-api.com" onchange="salvarConfig()" />
-          </div>
-          <div>
-            <label>Nome da Instância:</label>
-            <input type="text" id="apiInstance" placeholder="Ex: bigode" onchange="salvarConfig()" />
-          </div>
-          <div>
-            <label>API Key / Token:</label>
-            <input type="text" id="apiKey" placeholder="Sua chave API" onchange="salvarConfig()" />
-          </div>
-        </div>
-
-        <div style="margin-top: 12px; display: flex; gap: 10px; flex-wrap: wrap;">
-          <button class="btn btn-gold" onclick="gerarQRCode()">📱 Gerar QR Code de Conexão</button>
-          <button class="btn" onclick="verificarConexao()">🔄 Verificar Status</button>
-          <button class="btn btn-green" onclick="puxarGruposWhatsApp()">📥 Puxar Meus Grupos Automaticamente</button>
-        </div>
-        <div class="hint">
-          Abra o WhatsApp no celular → <strong>Aparelhos Conectados</strong> → <strong>Conectar um aparelho</strong> e aponte para o QR Code ao lado.
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- 2. IMPORTAR PLANILHA REVENDA -->
+  <!-- 1. PLANILHA -->
   <div class="panel">
-    <h2>2. Subir Planilha de Revenda</h2>
+    <h2>1. Subir Planilha de Revenda</h2>
     
-    <label>Qual coluna de preço puxar da planilha?</label>
+    <label>Qual coluna de preço puxar?</label>
     <select id="colunaPreco" onchange="salvarConfig()">
       <option value="anuncio">Preço do Anúncio (Margem de Negociação)</option>
       <option value="sugerido">Preço Sugerido de Venda</option>
     </select>
 
-    <label>1º Escolha seu arquivo (.xlsx, .xls ou .csv):</label>
-    <input type="file" id="planilhaFile" accept=".xlsx,.xls,.csv" />
-
-    <div style="margin-top: 12px; display: flex; gap: 8px; flex-wrap: wrap;">
-      <button class="btn btn-gold" style="flex:1;" onclick="inspecionarPlanilha()">🔍 Inspecionar e Carregar Produtos</button>
+    <input type="file" id="planilhaFile" accept=".xlsx,.xls,.csv" style="display:none" onchange="processarArquivo(this.files[0])" />
+    <div class="drop-zone" onclick="document.getElementById('planilhaFile').click()">
+      <div style="font-size: 24px; margin-bottom: 6px;">📂</div>
+      <strong style="color: var(--gold); font-size: 14px;">Clique para carregar sua Planilha</strong>
+      <div class="hint">Lê automaticamente os 14 produtos e oculta os custos.</div>
     </div>
-    <div class="hint">Selecione o arquivo acima e clique em <strong>Inspecionar e Carregar Produtos</strong> para listar todos os itens abaixo.</div>
 
-    <div style="margin-top: 12px; display: flex; gap: 8px; flex-wrap: wrap;">
+    <div style="margin-top: 12px; display: flex; gap: 8px;">
       <button class="btn" onclick="adicionarProdutoManual()">+ Item Manual</button>
       <button class="btn" style="color:var(--red);" onclick="limparProdutos()">Limpar Tudo</button>
     </div>
   </div>
 
-  <!-- 3. HORÁRIOS & GRUPOS -->
+  <!-- 2. PAINEL DO MUTIRÃO POR PRODUTO -->
   <div class="panel">
-    <h2>3. Horários & Grupos Alvo</h2>
-    <div class="row-2">
-      <div>
-        <label>1º Horário Diário:</label>
-        <input type="time" id="hora1" value="08:00" onchange="salvarConfig()" />
+    <h2>2. Painel Mutirão por Produto 👻</h2>
+    <div class="hint">Cadastre os <strong>nomes dos seus grupos</strong>. O robô vai focar no Produto 1 e passar em <em>todos</em> os grupos, depois vai para o Produto 2.</div>
+
+    <div style="margin-top: 10px; display:flex; gap:8px;">
+      <input type="text" id="novoGrupoNome" placeholder="Nome exato do grupo no WhatsApp" />
+      <button class="btn btn-gold" onclick="adicionarGrupo()">+ Adicionar</button>
+    </div>
+    <div id="listaGrupos" style="margin-top: 8px; max-height: 110px; overflow-y: auto;"></div>
+
+    <div class="ghost-panel">
+      <div id="ghostStatusArea">
+        <div style="font-weight: 700; color: #34d399; margin-bottom: 4px;">⚡ Status: Pronto para iniciar</div>
+        <div class="hint" style="color:#d1fae5">Dica: Deixe o filtro de "Grupos" ativado no seu WhatsApp Web ao lado!</div>
       </div>
-      <div>
-        <label>2º Horário Diário:</label>
-        <input type="time" id="hora2" value="18:00" onchange="salvarConfig()" />
+      <div style="margin-top: 12px; display: flex; gap: 8px; flex-wrap: wrap;">
+        <button class="btn btn-green" onclick="iniciarMutirao()">▶ Iniciar Mutirão</button>
+        <button class="btn" onclick="pararMutirao()">⏹ Parar</button>
       </div>
     </div>
-
-    <label>Adicionar Grupo Manualmente (ou use o botão "Puxar Grupos" acima):</label>
-    <div style="display:flex; gap:8px;">
-      <input type="text" id="novoGrupoNome" placeholder="Nome do Grupo" />
-      <input type="text" id="novoGrupoId" placeholder="ID (120363...@g.us)" />
-      <button class="btn btn-gold" onclick="adicionarGrupo()">+</button>
-    </div>
-
-    <div id="listaGrupos" style="margin-top: 10px; max-height: 150px; overflow-y: auto;"></div>
   </div>
 
-  <!-- 4. CATÁLOGO COM MÚLTIPLAS FOTOS -->
+  <!-- 3. CATÁLOGO & FOTOS -->
   <div class="panel full">
     <h2>
-      <span>4. Produtos Carregados (<span id="qtdAtivos">0</span> de <span id="qtdProdutos">0</span> marcados)</span>
-      <button class="btn btn-green" onclick="dispararTodosAgora()">🚀 Disparar Agora nos Grupos</button>
+      <span>3. Catálogo Carregado (<span id="qtdProdutos">0</span> itens)</span>
+      <span style="font-size: 12px; color: var(--muted);">Adicione suas fotos por produto</span>
     </h2>
-    <div class="hint">Você pode adicionar <strong>20 ou mais fotos</strong> por produto. A 1ª foto vai com a descrição completa e as demais vão em seguida.</div>
     <div class="products-grid" id="gridProdutos"></div>
   </div>
 
-  <!-- 5. LOGS -->
+  <!-- 4. LOGS -->
   <div class="panel full">
-    <h2>5. Histórico & Atividade do Robô</h2>
-    <div class="log-box" id="logBox">[Sistema] Gerenciando com BIGODE iniciado. Selecione sua planilha e clique em "Inspecionar e Carregar Produtos".</div>
+    <h2>4. Histórico de Ações</h2>
+    <div class="log-box" id="logBox">[Sistema] Pronto. Suba a planilha, adicione os nomes dos grupos e clique em Iniciar Mutirão.</div>
   </div>
 
 </div>
 
 <script>
-  let produtos = JSON.parse(localStorage.getItem('bigode_produtos_v3') || '[]');
-  let grupos = JSON.parse(localStorage.getItem('bigode_grupos') || '[{"id":"1203630001@g.us","nome":"Grupo Ofertas Principal","ativo":true}]');
-  let roboAtivo = false;
-  let ultimoDisparoMinuto = "";
-  let qrInterval = null;
+  let produtos = JSON.parse(localStorage.getItem('bigode_produtos_mutirao_v2') || '[]');
+  let grupos = JSON.parse(localStorage.getItem('bigode_grupos_m_v2') || '[{"nome":"GARIMPO DO BIGODE FERRAZ"}]');
+  let mutiraoRodando = false;
+  let idxProd = 0;
+  let idxGrp = 0;
 
-  // Carrega configurações salvas
-  document.getElementById('hora1').value = localStorage.getItem('bigode_hora1') || '08:00';
-  document.getElementById('hora2').value = localStorage.getItem('bigode_hora2') || '18:00';
-  document.getElementById('apiUrl').value = localStorage.getItem('bigode_apiUrl') || '';
-  document.getElementById('apiInstance').value = localStorage.getItem('bigode_apiInstance') || '';
-  document.getElementById('apiKey').value = localStorage.getItem('bigode_apiKey') || '';
   document.getElementById('colunaPreco').value = localStorage.getItem('bigode_colunaPreco') || 'anuncio';
 
   function log(msg) {
@@ -461,145 +218,22 @@
   }
 
   function salvarDados() {
-    try {
-      localStorage.setItem('bigode_produtos_v3', JSON.stringify(produtos));
-      localStorage.setItem('bigode_grupos', JSON.stringify(grupos));
-    } catch (e) {
-      log("⚠️ Limite de cache atingido no navegador. Evite fechar a aba antes de disparar.");
-    }
+    localStorage.setItem('bigode_produtos_mutirao_v2', JSON.stringify(produtos));
+    localStorage.setItem('bigode_grupos_m_v2', JSON.stringify(grupos));
   }
 
   function salvarConfig() {
-    localStorage.setItem('bigode_hora1', document.getElementById('hora1').value);
-    localStorage.setItem('bigode_hora2', document.getElementById('hora2').value);
-    localStorage.setItem('bigode_apiUrl', document.getElementById('apiUrl').value.trim().replace(/\/$/, ''));
-    localStorage.setItem('bigode_apiInstance', document.getElementById('apiInstance').value.trim());
-    localStorage.setItem('bigode_apiKey', document.getElementById('apiKey').value.trim());
     localStorage.setItem('bigode_colunaPreco', document.getElementById('colunaPreco').value);
   }
 
-  // --- CONEXÃO QR CODE ESTILO WHATSAPP WEB ---
-  async function gerarQRCode() {
-    salvarConfig();
-    const baseUrl = document.getElementById('apiUrl').value.trim().replace(/\/$/, '');
-    const instance = document.getElementById('apiInstance').value.trim();
-    const apiKey = document.getElementById('apiKey').value.trim();
-
-    if (!baseUrl || !instance || !apiKey) {
-      return alert("Preencha a URL do Servidor, o Nome da Instância e a API Key para gerar o QR Code!");
-    }
-
-    const qrBox = document.getElementById('qrContainer');
-    qrBox.innerHTML = "<span>Gerando QR Code...</span>";
-    log("📱 Solicitando QR Code ao servidor WhatsApp...");
-
-    try {
-      const res = await fetch(`${baseUrl}/instance/connect/${instance}`, {
-        headers: { 'apikey': apiKey }
-      });
-      const data = await res.json();
-
-      const base64 = data.base64 || data.qrcode?.base64;
-      if (base64) {
-        const imgSrc = base64.startsWith('data:image') ? base64 : `data:image/png;base64,${base64}`;
-        qrBox.innerHTML = `<img src="${imgSrc}" alt="QR Code WhatsApp" />`;
-        log("✅ QR Code gerado! Escaneie com seu WhatsApp.");
-
-        if (qrInterval) clearInterval(qrInterval);
-        qrInterval = setInterval(verificarConexao, 5000);
-      } else if (data.instance?.state === 'open') {
-        setStatusConectado(true);
-        qrBox.innerHTML = "<span style='color:#059669'>✅ Aparelho já está conectado!</span>";
-      } else {
-        qrBox.innerHTML = "<span>Não foi possível obter o QR. Verifique a instância.</span>";
-        log("⚠️ Resposta inesperada da API ao gerar QR Code.");
-      }
-    } catch (err) {
-      qrBox.innerHTML = "<span>Erro ao conectar na API</span>";
-      log(`❌ Erro ao gerar QR Code: ${err.message}`);
-    }
-  }
-
-  async function verificarConexao() {
-    const baseUrl = document.getElementById('apiUrl').value.trim().replace(/\/$/, '');
-    const instance = document.getElementById('apiInstance').value.trim();
-    const apiKey = document.getElementById('apiKey').value.trim();
-    if (!baseUrl || !instance || !apiKey) return;
-
-    try {
-      const res = await fetch(`${baseUrl}/instance/connectionState/${instance}`, {
-        headers: { 'apikey': apiKey }
-      });
-      const data = await res.json();
-      const state = data.instance?.state || data.state;
-
-      if (state === 'open') {
-        setStatusConectado(true);
-        document.getElementById('qrContainer').innerHTML = "<span style='color:#059669; font-size:14px;'>✅ WhatsApp Conectado!</span>";
-        if (qrInterval) clearInterval(qrInterval);
-      } else {
-        setStatusConectado(false);
-      }
-    } catch (e) {
-      setStatusConectado(false);
-    }
-  }
-
-  function setStatusConectado(online) {
-    const badge = document.getElementById('waStatusBadge');
-    if (online) {
-      badge.textContent = "🟢 WhatsApp Conectado";
-      badge.className = "badge-status badge-online";
-    } else {
-      badge.textContent = "🔴 Desconectado";
-      badge.className = "badge-status badge-offline";
-    }
-  }
-
-  async function puxarGruposWhatsApp() {
-    const baseUrl = document.getElementById('apiUrl').value.trim().replace(/\/$/, '');
-    const instance = document.getElementById('apiInstance').value.trim();
-    const apiKey = document.getElementById('apiKey').value.trim();
-    if (!baseUrl || !instance || !apiKey) return alert("Configure e conecte sua API primeiro!");
-
-    log("📥 Buscando seus grupos do WhatsApp...");
-    try {
-      const res = await fetch(`${baseUrl}/group/fetchAllGroups/${instance}?getParticipants=false`, {
-        headers: { 'apikey': apiKey }
-      });
-      const lista = await res.json();
-      if (Array.isArray(lista)) {
-        grupos = lista.map(g => ({
-          id: g.id,
-          nome: g.subject || g.id,
-          ativo: false
-        }));
-        salvarDados();
-        renderGrupos();
-        log(`✅ ${grupos.length} grupos carregados! Marque os que deseja postar.`);
-      }
-    } catch (err) {
-      log(`❌ Erro ao buscar grupos: ${err.message}`);
-    }
-  }
-
-  // --- BOTÃO INSPECIONAR E LER PLANILHA ---
   function formatarMoeda(valor) {
-    if (typeof valor === 'number') {
-      return valor.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    }
+    if (typeof valor === 'number') return valor.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     return String(valor || '0,00').replace('R$', '').trim();
   }
 
-  function inspecionarPlanilha() {
-    const input = document.getElementById('planilhaFile');
-    const file = input.files[0];
-
-    if (!file) {
-      return alert("Primeiro clique em 'Escolher arquivo' e selecione sua planilha Excel (.xlsx) ou CSV!");
-    }
-
-    log(`🔍 Inspecionando arquivo: ${file.name}...`);
+  function processarArquivo(file) {
+    if (!file) return;
+    log(`🔍 Lendo planilha: ${file.name}...`);
     const tipoPreco = document.getElementById('colunaPreco').value;
     const reader = new FileReader();
 
@@ -607,270 +241,191 @@
       try {
         const data = new Uint8Array(e.target.result);
         const workbook = XLSX.read(data, { type: 'array' });
-        
-        let totalImportados = 0;
+        let total = 0;
 
-        // Varre todas as abas até encontrar a tabela de produtos
         for (const sheetName of workbook.SheetNames) {
           const sheet = workbook.Sheets[sheetName];
           const linhas = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
-
-          // Procura qual linha tem o cabeçalho ou dados válidos
-          let colIdxEstoque = 0;
-          let colIdxNome = 1;
-          let colIdxSugerido = 3;
-          let colIdxAnuncio = 4;
+          let idxNome = 1, idxSugerido = 3, idxAnuncio = 4, idxEstoque = 0;
 
           for (let i = 0; i < linhas.length; i++) {
             const row = linhas[i].map(c => String(c).trim());
-            const linhaTexto = row.join(' ').toLowerCase();
+            const texto = row.join(' ').toLowerCase();
 
-            // Detecta automaticamente as colunas se encontrar o cabeçalho
-            if (linhaTexto.includes('nome do produto') || linhaTexto.includes('produto')) {
+            if (texto.includes('produto') || texto.includes('nome do produto')) {
               row.forEach((cell, idx) => {
-                const cLower = cell.toLowerCase();
-                if (cLower.includes('estoque') || cLower.includes('qtd')) colIdxEstoque = idx;
-                if (cLower.includes('produto') || cLower.includes('nome')) colIdxNome = idx;
-                if (cLower.includes('sugerido')) colIdxSugerido = idx;
-                if (cLower.includes('anúncio') || cLower.includes('anuncio')) colIdxAnuncio = idx;
+                const c = cell.toLowerCase();
+                if (c.includes('estoque')) idxEstoque = idx;
+                if (c.includes('produto') || c.includes('nome')) idxNome = idx;
+                if (c.includes('sugerido')) idxSugerido = idx;
+                if (c.includes('anúncio') || c.includes('anuncio')) idxAnuncio = idx;
               });
               continue;
             }
 
-            const nomeProd = row[colIdxNome];
-            if (!nomeProd || nomeProd.length < 2) continue;
-            if (nomeProd.toLowerCase().includes('total geral') || nomeProd.toLowerCase().includes('resumo')) continue;
+            const nomeProd = row[idxNome];
+            if (!nomeProd || nomeProd.length < 2 || nomeProd.toLowerCase().includes('total geral')) continue;
 
-            // Verifica se tem algum preço numérico na linha para evitar linhas vazias/títulos
-            const valSugerido = linhas[i][colIdxSugerido];
-            const valAnuncio = linhas[i][colIdxAnuncio];
-            if (!valSugerido && !valAnuncio) continue;
+            const val = tipoPreco === 'sugerido' ? linhas[i][idxSugerido] : (linhas[i][idxAnuncio] || linhas[i][idxSugerido]);
+            if (!val) continue;
 
-            const qtd = parseInt(row[colIdxEstoque]) || 1;
-            const precoFinal = tipoPreco === 'sugerido' ? (valSugerido || valAnuncio) : (valAnuncio || valSugerido);
-            const temDetalhe = /\((sem|enferrujado|avaria|detalhe|defeito|trincado|usado)/i.test(nomeProd);
+            const qtd = parseInt(row[idxEstoque]) || 1;
+            const temDetalhe = /\((sem|enferrujado|avaria|detalhe|defeito|trincado)/i.test(nomeProd);
 
             produtos.push({
               id: Date.now() + Math.random(),
               postar: true,
               nome: nomeProd,
-              preco: formatarMoeda(precoFinal),
+              preco: formatarMoeda(val),
               quantidade: qtd,
-              avarias: temDetalhe ? 'Com detalhes / avarias (ver foto/descrição)' : 'Sem avarias (em ótimo estado)',
+              avarias: temDetalhe ? 'Com detalhes / avarias (ver foto)' : 'Sem avarias (em ótimo estado)',
               descricao: '',
-              fotos: [] // Suporta ilimitadas fotos (20+)
+              fotos: []
             });
-            totalImportados++;
+            total++;
           }
-
-          if (totalImportados > 0) break; // Achou na primeira aba válida, para de procurar
+          if (total > 0) break;
         }
 
-        if (totalImportados === 0) {
-          log("⚠️ Nenhum produto encontrado. Verifique se a planilha tem as colunas Nome e Preço preenchidas.");
-          alert("Não encontrei linhas de produtos preenchidas nesse arquivo. Verifique se a planilha não está em branco.");
-        } else {
-          salvarDados();
-          renderProdutos();
-          log(`✅ Inspeção concluída! ${totalImportados} produtos carregados na tela.`);
-          document.getElementById('gridProdutos').scrollIntoView({ behavior: 'smooth' });
-        }
-      } catch (err) {
-        log(`❌ Erro ao ler planilha: ${err.message}`);
-        alert("Erro ao ler o arquivo: " + err.message);
-      }
+        salvarDados();
+        renderProdutos();
+        log(`✅ ${total} produtos carregados! Prontos para o mutirão.`);
+      } catch (err) { log(`❌ Erro ao ler planilha: ${err.message}`); }
     };
-
     reader.readAsArrayBuffer(file);
   }
 
   function adicionarProdutoManual() {
-    produtos.push({
-      id: Date.now(),
-      postar: true,
-      nome: "Novo Produto",
-      preco: "99,90",
-      quantidade: 1,
-      avarias: "Sem avarias (em ótimo estado)",
-      descricao: "",
-      fotos: []
-    });
-    salvarDados();
-    renderProdutos();
+    produtos.push({ id: Date.now(), postar: true, nome: "Novo Produto", preco: "99,90", quantidade: 1, avarias: "Sem avarias", descricao: "", fotos: [] });
+    salvarDados(); renderProdutos();
   }
 
   function limparProdutos() {
-    if (confirm("Remover todos os produtos carregados?")) {
-      produtos = [];
-      salvarDados();
-      renderProdutos();
-      log("Lista de produtos limpa.");
-    }
+    if (confirm("Limpar catálogo?")) { produtos = []; salvarDados(); renderProdutos(); log("Catálogo limpo."); }
   }
 
-  // --- COMPRESSÃO E UPLOAD DE MÚLTIPLAS FOTOS (20+ FOTOS POR ITEM) ---
+  // --- FOTOS ---
   function comprimirImagem(file) {
     return new Promise((resolve) => {
       const reader = new FileReader();
-      reader.onload = function(event) {
+      reader.onload = function(e) {
         const img = new Image();
         img.onload = function() {
           const canvas = document.createElement('canvas');
-          const MAX_WIDTH = 900;
-          let width = img.width;
-          let height = img.height;
-
-          if (width > MAX_WIDTH) {
-            height *= MAX_WIDTH / width;
-            width = MAX_WIDTH;
-          }
-
-          canvas.width = width;
-          canvas.height = height;
-          const ctx = canvas.getContext('2d');
-          ctx.drawImage(img, 0, 0, width, height);
-          resolve(canvas.toDataURL('image/jpeg', 0.78));
+          const MAX = 900;
+          let w = img.width, h = img.height;
+          if (w > MAX) { h *= MAX / w; w = MAX; }
+          canvas.width = w; canvas.height = h;
+          canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+          resolve(canvas.toDataURL('image/jpeg', 0.8));
         };
-        img.src = event.target.result;
+        img.src = e.target.result;
       };
       reader.readAsDataURL(file);
     });
   }
 
-  async function uploadMultiplasFotos(event, idx) {
+  async function uploadFotos(event, idx) {
     const files = Array.from(event.target.files);
     if (!files.length) return;
+    if (!Array.isArray(produtos[idx].fotos)) produtos[idx].fotos = [];
 
-    if (!Array.isArray(produtos[idx].fotos)) {
-      produtos[idx].fotos = [];
+    for (const f of files) {
+      const base64 = await comprimirImagem(f);
+      produtos[idx].fotos.push(base64);
     }
-
-    log(`📸 Processando ${files.length} foto(s) para "${produtos[idx].nome}"...`);
-
-    for (const file of files) {
-      const base64Comprimido = await comprimirImagem(file);
-      produtos[idx].fotos.push(base64Comprimido);
-    }
-
-    salvarDados();
-    renderProdutos();
-    log(`✅ Total de ${produtos[idx].fotos.length} foto(s) salvas em "${produtos[idx].nome}".`);
+    salvarDados(); renderProdutos();
+    log(`📸 Foto(s) adicionada(s) em: ${produtos[idx].nome}`);
   }
 
-  function removerFoto(prodIdx, fotoIdx) {
-    produtos[prodIdx].fotos.splice(fotoIdx, 1);
-    salvarDados();
-    renderProdutos();
-  }
+  function removerFoto(pIdx, fIdx) { produtos[pIdx].fotos.splice(fIdx, 1); salvarDados(); renderProdutos(); }
+  function limparFotos(pIdx) { produtos[pIdx].fotos = []; salvarDados(); renderProdutos(); }
 
-  function limparFotosProduto(prodIdx) {
-    produtos[prodIdx].fotos = [];
-    salvarDados();
-    renderProdutos();
-  }
-
-  // --- TEXTO DO ANÚNCIO ---
+  // --- TEXTO ---
   function gerarTextoAnuncio(p) {
-    let texto = `🔥 *${p.nome.toUpperCase()}*\n`;
-    texto += `💰 *Valor:* R$ ${p.preco}\n`;
-    texto += `📦 *Quantidade disponível:* ${p.quantidade} un.\n`;
-    texto += `🛠️ *Estado:* ${p.avarias}\n`;
-    if (p.descricao && p.descricao.trim() !== '') {
-      texto += `\n📝 *Detalhes:* ${p.descricao.trim()}\n`;
-    }
-    texto += `\n👇 *Chame no privado para garantir!*`;
-    return texto;
+    let t = `🔥 *${p.nome.toUpperCase()}*\n`;
+    t += `💰 *Valor:* R$ ${p.preco}\n`;
+    t += `📦 *Quantidade:* ${p.quantidade} un.\n`;
+    t += `🛠️ *Estado:* ${p.avarias}\n`;
+    if (p.descricao) t += `\n📝 ${p.descricao}\n`;
+    t += `\n👇 *Chame no privado para garantir!*`;
+    return t;
   }
 
-  function renderProdutos() {
-    const grid = document.getElementById('gridProdutos');
-    document.getElementById('qtdProdutos').textContent = produtos.length;
-    document.getElementById('qtdAtivos').textContent = produtos.filter(p => p.postar).length;
-    grid.innerHTML = '';
-
-    produtos.forEach((p, idx) => {
-      if (!Array.isArray(p.fotos)) p.fotos = p.foto ? [p.foto] : [];
-
-      const thumbsHTML = p.fotos.map((f, fIdx) => `
-        <div class="thumb-item">
-          <img src="${f}" />
-          <button class="thumb-del" title="Remover foto" onclick="removerFoto(${idx}, ${fIdx})">×</button>
-        </div>
-      `).join('');
-
-      const card = document.createElement('div');
-      card.className = `product-card ${p.postar ? '' : 'inativo'}`;
-      card.innerHTML = `
-        <div class="card-top">
-          <label style="margin:0; color:#fff; font-weight:700; display:flex; align-items:center; gap:6px; cursor:pointer;">
-            <input type="checkbox" ${p.postar ? 'checked' : ''} onchange="togglePostar(${idx})" />
-            Subir este item
-          </label>
-          <button class="btn" style="padding:3px 8px; font-size:11px; color:var(--red);" onclick="removerProduto(${idx})">Excluir</button>
-        </div>
-
-        <div class="gallery-area">
-          <div class="gallery-header">
-            <span style="font-size:12px; font-weight:700; color:var(--gold);">📷 Fotos (${p.fotos.length})</span>
-            <div style="display:flex; gap:5px;">
-              ${p.fotos.length > 0 ? `<button class="btn" style="padding:3px 7px; font-size:11px; color:var(--red);" onclick="limparFotosProduto(${idx})">Limpar</button>` : ''}
-              <button class="btn btn-gold" style="padding:4px 9px; font-size:11px;" onclick="document.getElementById('fotoInput_${idx}').click()">+ Adicionar Fotos</button>
-            </div>
-            <input type="file" id="fotoInput_${idx}" accept="image/*" multiple style="display:none" onchange="uploadMultiplasFotos(event, ${idx})" />
-          </div>
-          ${p.fotos.length > 0
-            ? `<div class="thumbs-grid">${thumbsHTML}</div>`
-            : `<div style="text-align:center; padding:18px 5px; font-size:11px; color:var(--muted); cursor:pointer;" onclick="document.getElementById('fotoInput_${idx}').click()">Clique em "+ Adicionar Fotos" para subir até 20+ imagens</div>`
-          }
-        </div>
-
-        <label>Nome do Produto:</label>
-        <input type="text" value="${p.nome}" onchange="editarCampo(${idx}, 'nome', this.value)" />
-
-        <div class="row-2">
-          <div>
-            <label>Preço (R$):</label>
-            <input type="text" value="${p.preco}" onchange="editarCampo(${idx}, 'preco', this.value)" />
-          </div>
-          <div>
-            <label>Quantidade:</label>
-            <input type="number" min="1" value="${p.quantidade}" onchange="editarCampo(${idx}, 'quantidade', this.value)" />
-          </div>
-        </div>
-
-        <label>Avarias / Estado do Produto:</label>
-        <select onchange="editarCampo(${idx}, 'avarias', this.value)">
-          <option value="Sem avarias (em ótimo estado)" ${p.avarias.includes('Sem avarias') ? 'selected' : ''}>✅ Sem avarias</option>
-          <option value="Com detalhes / avarias (ver foto/descrição)" ${p.avarias.includes('Com detalhes') ? 'selected' : ''}>⚠️ Com avarias / detalhes</option>
-          <option value="Novo na caixa / lacrado" ${p.avarias.includes('Novo') ? 'selected' : ''}>✨ Novo / Lacrado</option>
-        </select>
-
-        <label>Descrição (Opcional - só vai se preencher):</label>
-        <textarea rows="2" placeholder="Deixe em branco se não quiser adicionar descrição..." onchange="editarCampo(${idx}, 'descricao', this.value)">${p.descricao}</textarea>
-
-        <div class="preview-msg" id="prev_${idx}">${gerarTextoAnuncio(p)}</div>
-      `;
-      grid.appendChild(card);
+  function copiarTextoUnico(idx) {
+    const p = produtos[idx];
+    navigator.clipboard.writeText(gerarTextoAnuncio(p)).then(() => {
+      log(`📋 Anúncio "${p.nome}" copiado!`);
+      alert(`Texto copiado para: ${p.nome}\nCole (Ctrl+V) no WhatsApp Web.`);
     });
   }
 
-  function togglePostar(idx) {
-    produtos[idx].postar = !produtos[idx].postar;
-    salvarDados();
-    renderProdutos();
+  // --- MUTIRÃO INTELIGENTE (FOCO NO PRODUTO -> TODOS OS GRUPOS) ---
+  function iniciarMutirao() {
+    const ativos = produtos.filter(p => p.postar);
+    if (!ativos.length) return alert("Nenhum produto marcado para postar!");
+    if (!grupos.length) return alert("Adicione pelo menos 1 grupo de destino!");
+
+    mutiraoRodando = true;
+    idxProd = 0;
+    idxGrp = 0;
+    processarPassoMutirao();
+    log("🚀 Mutirão por Produto iniciado!");
   }
 
-  function editarCampo(idx, campo, valor) {
-    produtos[idx][campo] = valor;
-    salvarDados();
-    const prev = document.getElementById(`prev_${idx}`);
-    if (prev) prev.textContent = gerarTextoAnuncio(produtos[idx]);
+  function pararMutirao() {
+    mutiraoRodando = false;
+    document.getElementById('ghostStatusArea').innerHTML = `<div style="font-weight: 700; color: var(--gold);">Status: Mutirão pausado.</div>`;
+    log("⏹ Mutirão pausado.");
   }
 
-  function removerProduto(idx) {
-    produtos.splice(idx, 1);
-    salvarDados();
-    renderProdutos();
+  function processarPassoMutirao() {
+    if (!mutiraoRodando) return;
+    const ativos = produtos.filter(p => p.postar);
+
+    if (idxProd >= ativos.length) {
+      mutiraoRodando = false;
+      document.getElementById('ghostStatusArea').innerHTML = `<div style="font-weight: 700; color: #34d399; font-size:15px;">🏁 Mutirão Concluído! Todos os produtos passaram em todos os grupos.</div>`;
+      log("🏁 Mutirão finalizado com sucesso!");
+      alert("Parabéns! Mutirão concluído com sucesso em todos os grupos.");
+      return;
+    }
+
+    const p = ativos[idxProd];
+    const g = grupos[idxGrp];
+    const texto = gerarTextoAnuncio(p);
+    const primeiraFoto = (p.fotos && p.fotos.length > 0) ? p.fotos[0] : '';
+
+    navigator.clipboard.writeText(texto).then(() => {
+      const area = document.getElementById('ghostStatusArea');
+      area.innerHTML = `
+        <div style="font-weight: 700; color: var(--gold); font-size:14px; margin-bottom:4px;">
+          📦 Produto <b>${idxProd + 1} de ${ativos.length}</b>: <span style="color:#fff">${p.nome}</span>
+        </div>
+        <div style="font-size:13px; color:#34d399; margin-bottom:8px;">
+          📌 Enviando para o Grupo (${idxGrp + 1} de ${grupos.length}): <b>${g.nome}</b>
+        </div>
+        ${primeiraFoto ? `<div style="margin-bottom:8px;"><img src="${primeiraFoto}" style="width:50px; height:50px; object-fit:cover; border-radius:6px; border:1px solid #34d399;" /> <span style="font-size:11px; color:var(--muted)">Foto principal na memória/painel</span></div>` : ''}
+        <div style="font-size:12px; color:var(--muted); margin-bottom:10px;">
+          1️⃣ Texto copiado!<br>
+          2️⃣ Abra o grupo <b>${g.nome}</b>, cole o texto (Ctrl+V) junto com a foto e envie.<br>
+          3️⃣ Clique abaixo para ir para o <b>próximo grupo</b> deste mesmo produto.
+        </div>
+        <button class="btn btn-gold" style="padding:7px 14px;" onclick="avancarGrupoMutirao()">➡️ Já postei neste grupo, ir para o Próximo Grupo</button>
+      `;
+      log(`👻 [Mutirão] Produto "${p.nome}" -> Grupo "${g.nome}".`);
+    });
+  }
+
+  function avancarGrupoMutirao() {
+    if (!mutiraoRodando) return;
+    idxGrp++;
+    // Se acabou os grupos, zera os grupos e passa para o PRÓXIMO PRODUTO
+    if (idxGrp >= grupos.length) {
+      idxGrp = 0;
+      idxProd++;
+    }
+    processarPassoMutirao();
   }
 
   // --- GRUPOS ---
@@ -878,144 +433,78 @@
     const div = document.getElementById('listaGrupos');
     div.innerHTML = '';
     grupos.forEach((g, idx) => {
-      div.innerHTML += `
-        <div class="group-item">
-          <label>
-            <input type="checkbox" ${g.ativo ? 'checked' : ''} onchange="toggleGrupo(${idx})" />
-            <span><strong>${g.nome}</strong> <small style="color:var(--muted)">(${g.id})</small></span>
-          </label>
-          <button class="btn" style="padding:4px 8px; font-size:11px;" onclick="removerGrupo(${idx})">X</button>
-        </div>
-      `;
+      div.innerHTML += `<div class="group-item"><span>📌 <strong>${g.nome}</strong></span><button class="btn" style="padding:2px 6px; font-size:10px;" onclick="grupos.splice(${idx},1); salvarDados(); renderGrupos();">X</button></div>`;
     });
   }
 
   function adicionarGrupo() {
-    const nome = document.getElementById('novoGrupoNome').value.trim();
-    const id = document.getElementById('novoGrupoId').value.trim();
-    if (!nome || !id) return alert("Preencha o nome e o ID do grupo!");
-    grupos.push({ nome, id, ativo: true });
-    document.getElementById('novoGrupoNome').value = '';
-    document.getElementById('novoGrupoId').value = '';
-    salvarDados();
-    renderGrupos();
+    const input = document.getElementById('novoGrupoNome');
+    const nome = input.value.trim();
+    if (!nome) return;
+    grupos.push({ nome });
+    input.value = '';
+    salvarDados(); renderGrupos();
   }
 
-  function toggleGrupo(idx) {
-    grupos[idx].ativo = !grupos[idx].ativo;
-    salvarDados();
+  // --- RENDERIZAR TELA ---
+  function renderProdutos() {
+    const grid = document.getElementById('gridProdutos');
+    document.getElementById('qtdProdutos').textContent = produtos.length;
+    grid.innerHTML = '';
+
+    produtos.forEach((p, idx) => {
+      if (!Array.isArray(p.fotos)) p.fotos = p.foto ? [p.foto] : [];
+      const thumbs = p.fotos.map((f, fIdx) => `
+        <div class="thumb-item"><img src="${f}" /><button class="thumb-del" onclick="removerFoto(${idx}, ${fIdx})">×</button></div>
+      `).join('');
+
+      const card = document.createElement('div');
+      card.className = `product-card ${p.postar ? '' : 'inativo'}`;
+      card.innerHTML = `
+        <div class="card-top">
+          <label style="margin:0; color:#fff; font-weight:700; display:flex; align-items:center; gap:6px; cursor:pointer;">
+            <input type="checkbox" ${p.postar ? 'checked' : ''} onchange="produtos[${idx}].postar = !produtos[${idx}].postar; salvarDados();" />
+            Ativo no Mutirão
+          </label>
+          <div style="display:flex; gap:6px;">
+            <button class="btn btn-gold" style="padding:3px 8px; font-size:11px;" onclick="copiarTextoUnico(${idx})">📋 Copiar</button>
+            <button class="btn" style="padding:3px 8px; font-size:11px; color:var(--red);" onclick="produtos.splice(${idx},1); salvarDados(); renderProdutos();">Excluir</button>
+          </div>
+        </div>
+
+        <div class="gallery-area">
+          <div class="gallery-header">
+            <span style="font-size:12px; font-weight:700; color:var(--gold);">📷 Fotos (${p.fotos.length})</span>
+            <button class="btn btn-gold" style="padding:3px 8px; font-size:11px;" onclick="document.getElementById('fIn_${idx}').click()">+ Fotos</button>
+            <input type="file" id="fIn_${idx}" accept="image/*" multiple style="display:none" onchange="uploadFotos(event, ${idx})" />
+          </div>
+          ${p.fotos.length > 0 ? `<div class="thumbs-grid">${thumbs}</div>` : `<div style="text-align:center; padding:10px; font-size:11px; color:var(--muted)">Clique em + Fotos</div>`}
+        </div>
+
+        <label>Nome:</label>
+        <input type="text" value="${p.nome}" onchange="produtos[${idx}].nome = this.value; salvarDados();" />
+
+        <div class="row-2">
+          <div><label>Preço (R$):</label><input type="text" value="${p.preco}" onchange="produtos[${idx}].preco = this.value; salvarDados();" /></div>
+          <div><label>Qtd:</label><input type="number" value="${p.quantidade}" onchange="produtos[${idx}].quantidade = this.value; salvarDados();" /></div>
+        </div>
+
+        <label>Estado:</label>
+        <select onchange="produtos[${idx}].avarias = this.value; salvarDados();">
+          <option value="Sem avarias (em ótimo estado)" ${p.avarias.includes('Sem') ? 'selected' : ''}>✅ Sem avarias</option>
+          <option value="Com detalhes / avarias (ver foto)" ${p.avarias.includes('detalhes') ? 'selected' : ''}>⚠️ Com avarias</option>
+          <option value="Novo na caixa / lacrado" ${p.avarias.includes('Novo') ? 'selected' : ''}>✨ Novo / Lacrado</option>
+          <option value="Sem acessórios / faltando peças" ${p.avarias.includes('acessórios') ? 'selected' : ''}>⚠️ Faltando peças / acessórios</option>
+        </select>
+
+        <label>Descrição Opcional:</label>
+        <textarea rows="2" onchange="produtos[${idx}].descricao = this.value; salvarDados();">${p.descricao}</textarea>
+
+        <div class="preview-msg">${gerarTextoAnuncio(p)}</div>
+      `;
+      grid.appendChild(card);
+    });
   }
-
-  function removerGrupo(idx) {
-    grupos.splice(idx, 1);
-    salvarDados();
-    renderGrupos();
-  }
-
-  // --- ROBÔ & DISPARO DE MÚLTIPLAS FOTOS ---
-  function toggleRobo() {
-    const ativos = produtos.filter(p => p.postar);
-    const gruposAtivos = grupos.filter(g => g.ativo);
-
-    if (!roboAtivo) {
-      if (ativos.length === 0) return alert("Marque pelo menos 1 produto para subir!");
-      if (gruposAtivos.length === 0) return alert("Selecione pelo menos 1 grupo alvo!");
-    }
-
-    roboAtivo = !roboAtivo;
-    const btn = document.getElementById('btnMaster');
-    if (roboAtivo) {
-      btn.textContent = "⏹ ROBÔ ATIVO (CLIQUE P/ PAUSAR)";
-      btn.className = "btn-master on";
-      log(`🟢 ROBÔ ATIVADO! ${ativos.length} itens agendados para ${document.getElementById('hora1').value} e ${document.getElementById('hora2').value}.`);
-    } else {
-      btn.textContent = "▶ ATIVAR ROBÔ";
-      btn.className = "btn-master off";
-      log("🔴 Robô pausado.");
-    }
-  }
-
-  async function dispararTodosAgora() {
-    const ativos = produtos.filter(p => p.postar);
-    const gruposAtivos = grupos.filter(g => g.ativo);
-
-    if (ativos.length === 0 || gruposAtivos.length === 0) {
-      return alert("Verifique se há produtos marcados e grupos selecionados.");
-    }
-
-    const baseUrl = document.getElementById('apiUrl').value.trim().replace(/\/$/, '');
-    const instance = document.getElementById('apiInstance').value.trim();
-    const apiKey = document.getElementById('apiKey').value.trim();
-
-    log(`🚀 Iniciando disparos (${ativos.length} itens em ${gruposAtivos.length} grupo(s))...`);
-
-    for (const grupo of gruposAtivos) {
-      for (const prod of ativos) {
-        const legenda = gerarTextoAnuncio(prod);
-        const listaFotos = Array.isArray(prod.fotos) ? prod.fotos : [];
-
-        if (baseUrl && instance && apiKey) {
-          try {
-            if (listaFotos.length > 0) {
-              // Envia cada foto; a 1ª leva a legenda completa e as outras vão logo em seguida
-              for (let i = 0; i < listaFotos.length; i++) {
-                await fetch(`${baseUrl}/message/sendMedia/${instance}`, {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json', 'apikey': apiKey },
-                  body: JSON.stringify({
-                    number: grupo.id,
-                    mediatype: "image",
-                    caption: i === 0 ? legenda : "",
-                    media: listaFotos[i]
-                  })
-                });
-                await new Promise(r => setTimeout(r, 1200));
-              }
-              log(`✅ Enviado "${prod.nome}" com ${listaFotos.length} foto(s) -> ${grupo.nome}`);
-            } else {
-              // Envia apenas texto caso não tenha foto
-              await fetch(`${baseUrl}/message/sendText/${instance}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'apikey': apiKey },
-                body: JSON.stringify({
-                  number: grupo.id,
-                  text: legenda
-                })
-              });
-              log(`✅ Enviado "${prod.nome}" (sem foto) -> ${grupo.nome}`);
-            }
-          } catch (err) {
-            log(`❌ Erro ao enviar "${prod.nome}": ${err.message}`);
-          }
-        } else {
-          log(`📤 [Simulação] "${prod.nome}" (${listaFotos.length} foto(s) | R$ ${prod.preco}) -> ${grupo.nome}`);
-        }
-
-        await new Promise(r => setTimeout(r, 2000));
-      }
-    }
-    log("🏁 Todos os disparos concluídos!");
-  }
-
-  setInterval(() => {
-    const agora = new Date();
-    const hh = String(agora.getHours()).padStart(2, '0');
-    const mm = String(agora.getMinutes()).padStart(2, '0');
-    const ss = String(agora.getSeconds()).padStart(2, '0');
-    const horaAtual = `${hh}:${mm}`;
-
-    document.getElementById('relogio').textContent = `${hh}:${mm}:${ss}`;
-
-    if (roboAtivo && ss === '00' && ultimoDisparoMinuto !== horaAtual) {
-      const h1 = document.getElementById('hora1').value;
-      const h2 = document.getElementById('hora2').value;
-      if (horaAtual === h1 || horaAtual === h2) {
-        ultimoDisparoMinuto = horaAtual;
-        log(`⏰ Horário atingido (${horaAtual})! Disparando catálogo...`);
-        dispararTodosAgora();
-      }
-    }
-  }, 1000);
 
   renderGrupos();
   renderProdutos();
