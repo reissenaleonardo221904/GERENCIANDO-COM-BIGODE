@@ -79,7 +79,6 @@
     }
     .drop-zone:hover { background: rgba(245, 158, 11, 0.16); }
 
-    /* Painel do Mutirão por Produto */
     .ghost-panel {
       background: #091a14; border: 2px solid var(--green); border-radius: 12px; padding: 18px; margin-top: 15px;
     }
@@ -152,7 +151,7 @@
     <div class="drop-zone" onclick="document.getElementById('planilhaFile').click()">
       <div style="font-size: 24px; margin-bottom: 6px;">📂</div>
       <strong style="color: var(--gold); font-size: 14px;">Clique para carregar sua Planilha</strong>
-      <div class="hint">Lê automaticamente os 14 produtos e oculta os custos.</div>
+      <div class="hint">Leitor super flexível para qualquer planilha Excel ou CSV.</div>
     </div>
 
     <div style="margin-top: 12px; display: flex; gap: 8px;">
@@ -164,7 +163,7 @@
   <!-- 2. PAINEL DO MUTIRÃO POR PRODUTO -->
   <div class="panel">
     <h2>2. Painel Mutirão por Produto 👻</h2>
-    <div class="hint">Cadastre os <strong>nomes dos seus grupos</strong>. O robô vai focar no Produto 1 e passar em <em>todos</em> os grupos, depois vai para o Produto 2.</div>
+    <div class="hint">Cadastre os <strong>nomes dos seus grupos</strong>. O robô foca no Produto 1, passa em <em>todos</em> os grupos, e depois vai para o Produto 2.</div>
 
     <div style="margin-top: 10px; display:flex; gap:8px;">
       <input type="text" id="novoGrupoNome" placeholder="Nome exato do grupo no WhatsApp" />
@@ -175,7 +174,7 @@
     <div class="ghost-panel">
       <div id="ghostStatusArea">
         <div style="font-weight: 700; color: #34d399; margin-bottom: 4px;">⚡ Status: Pronto para iniciar</div>
-        <div class="hint" style="color:#d1fae5">Dica: Deixe o filtro de "Grupos" ativado no seu WhatsApp Web ao lado!</div>
+        <div class="hint" style="color:#d1fae5">Deixe o filtro de "Grupos" ativado no seu WhatsApp Web ao lado!</div>
       </div>
       <div style="margin-top: 12px; display: flex; gap: 8px; flex-wrap: wrap;">
         <button class="btn btn-green" onclick="iniciarMutirao()">▶ Iniciar Mutirão</button>
@@ -196,14 +195,14 @@
   <!-- 4. LOGS -->
   <div class="panel full">
     <h2>4. Histórico de Ações</h2>
-    <div class="log-box" id="logBox">[Sistema] Pronto. Suba a planilha, adicione os nomes dos grupos e clique em Iniciar Mutirão.</div>
+    <div class="log-box" id="logBox">[Sistema] Pronto. Suba a planilha e adicione os nomes dos grupos.</div>
   </div>
 
 </div>
 
 <script>
-  let produtos = JSON.parse(localStorage.getItem('bigode_produtos_mutirao_v2') || '[]');
-  let grupos = JSON.parse(localStorage.getItem('bigode_grupos_m_v2') || '[{"nome":"GARIMPO DO BIGODE FERRAZ"}]');
+  let produtos = JSON.parse(localStorage.getItem('bigode_produtos_mutirao_v3') || '[]');
+  let grupos = JSON.parse(localStorage.getItem('bigode_grupos_m_v3') || '[{"nome":"GARIMPO DO BIGODE FERRAZ"}]');
   let mutiraoRodando = false;
   let idxProd = 0;
   let idxGrp = 0;
@@ -218,8 +217,8 @@
   }
 
   function salvarDados() {
-    localStorage.setItem('bigode_produtos_mutirao_v2', JSON.stringify(produtos));
-    localStorage.setItem('bigode_grupos_m_v2', JSON.stringify(grupos));
+    localStorage.setItem('bigode_produtos_mutirao_v3', JSON.stringify(produtos));
+    localStorage.setItem('bigode_grupos_m_v3', JSON.stringify(grupos));
   }
 
   function salvarConfig() {
@@ -241,57 +240,83 @@
       try {
         const data = new Uint8Array(e.target.result);
         const workbook = XLSX.read(data, { type: 'array' });
-        let total = 0;
+        let totalImportados = 0;
 
         for (const sheetName of workbook.SheetNames) {
           const sheet = workbook.Sheets[sheetName];
           const linhas = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
-          let idxNome = 1, idxSugerido = 3, idxAnuncio = 4, idxEstoque = 0;
 
+          if (linhas.length === 0) continue;
+
+          // Descobre índices das colunas analisando o cabeçalho
+          let colNome = -1, colSugerido = -1, colAnuncio = -1, colEstoque = -1;
+
+          for (let i = 0; i < Math.min(linhas.length, 10); i++) {
+            const row = linhas[i].map(c => String(c).trim().toLowerCase());
+            row.forEach((cell, idx) => {
+              if (cell.includes('produto') || cell.includes('nome')) colNome = idx;
+              if (cell.includes('sugerido')) colSugerido = idx;
+              if (cell.includes('anúncio') || cell.includes('anuncio')) colAnuncio = idx;
+              if (cell.includes('estoque') || cell.includes('qtd')) colEstoque = idx;
+            });
+            if (colNome !== -1) break;
+          }
+
+          // Se não achou cabeçalho claro, usa padrões seguros (Coluna 1 p/ nome, 3 e 4 p/ preços)
+          if (colNome === -1) colNome = 1;
+          if (colEstoque === -1) colEstoque = 0;
+          if (colSugerido === -1) colSugerido = 3;
+          if (colAnuncio === -1) colAnuncio = 4;
+
+          // Varre as linhas extraindo os produtos
           for (let i = 0; i < linhas.length; i++) {
-            const row = linhas[i].map(c => String(c).trim());
-            const texto = row.join(' ').toLowerCase();
+            const row = linhas[i];
+            if (!row || row.length === 0) continue;
 
-            if (texto.includes('produto') || texto.includes('nome do produto')) {
-              row.forEach((cell, idx) => {
-                const c = cell.toLowerCase();
-                if (c.includes('estoque')) idxEstoque = idx;
-                if (c.includes('produto') || c.includes('nome')) idxNome = idx;
-                if (c.includes('sugerido')) idxSugerido = idx;
-                if (c.includes('anúncio') || c.includes('anuncio')) idxAnuncio = idx;
-              });
-              continue;
-            }
+            const nomeProd = String(row[colNome] || '').trim();
+            if (!nomeProd || nomeProd.length < 2) continue;
+            const nLower = nomeProd.toLowerCase();
+            if (nLower.includes('total') || nLower.includes('resumo') || nLower.includes('nome do produto')) continue;
 
-            const nomeProd = row[idxNome];
-            if (!nomeProd || nomeProd.length < 2 || nomeProd.toLowerCase().includes('total geral')) continue;
+            const valSugerido = row[colSugerido];
+            const valAnuncio = row[colAnuncio];
+            const precoFinal = tipoPreco === 'sugerido' ? (valSugerido || valAnuncio) : (valAnuncio || valSugerido);
 
-            const val = tipoPreco === 'sugerido' ? linhas[i][idxSugerido] : (linhas[i][idxAnuncio] || linhas[i][idxSugerido]);
-            if (!val) continue;
+            if (!precoFinal) continue; // Pula linha se não tiver preço
 
-            const qtd = parseInt(row[idxEstoque]) || 1;
+            const qtd = parseInt(row[colEstoque]) || 1;
             const temDetalhe = /\((sem|enferrujado|avaria|detalhe|defeito|trincado)/i.test(nomeProd);
 
             produtos.push({
               id: Date.now() + Math.random(),
               postar: true,
               nome: nomeProd,
-              preco: formatarMoeda(val),
+              preco: formatarMoeda(precoFinal),
               quantidade: qtd,
               avarias: temDetalhe ? 'Com detalhes / avarias (ver foto)' : 'Sem avarias (em ótimo estado)',
               descricao: '',
               fotos: []
             });
-            total++;
+            totalImportados++;
           }
-          if (total > 0) break;
+
+          if (totalImportados > 0) break;
         }
 
-        salvarDados();
-        renderProdutos();
-        log(`✅ ${total} produtos carregados! Prontos para o mutirão.`);
-      } catch (err) { log(`❌ Erro ao ler planilha: ${err.message}`); }
+        if (totalImportados === 0) {
+          log("⚠️ Nenhum produto encontrado. Verifique se a planilha tem dados válidos.");
+          alert("Não encontrei produtos na planilha. Verifique o arquivo.");
+        } else {
+          salvarDados();
+          renderProdutos();
+          log(`✅ ${totalImportados} produtos carregados com sucesso! Custos ocultados.`);
+        }
+      } catch (err) {
+        log(`❌ Erro ao ler planilha: ${err.message}`);
+        alert("Erro ao ler o arquivo: " + err.message);
+      }
     };
+
     reader.readAsArrayBuffer(file);
   }
 
@@ -339,7 +364,6 @@
   }
 
   function removerFoto(pIdx, fIdx) { produtos[pIdx].fotos.splice(fIdx, 1); salvarDados(); renderProdutos(); }
-  function limparFotos(pIdx) { produtos[pIdx].fotos = []; salvarDados(); renderProdutos(); }
 
   // --- TEXTO ---
   function gerarTextoAnuncio(p) {
@@ -360,7 +384,7 @@
     });
   }
 
-  // --- MUTIRÃO INTELIGENTE (FOCO NO PRODUTO -> TODOS OS GRUPOS) ---
+  // --- MUTIRÃO INTELIGENTE ---
   function iniciarMutirao() {
     const ativos = produtos.filter(p => p.postar);
     if (!ativos.length) return alert("Nenhum produto marcado para postar!");
@@ -405,10 +429,10 @@
         <div style="font-size:13px; color:#34d399; margin-bottom:8px;">
           📌 Enviando para o Grupo (${idxGrp + 1} de ${grupos.length}): <b>${g.nome}</b>
         </div>
-        ${primeiraFoto ? `<div style="margin-bottom:8px;"><img src="${primeiraFoto}" style="width:50px; height:50px; object-fit:cover; border-radius:6px; border:1px solid #34d399;" /> <span style="font-size:11px; color:var(--muted)">Foto principal na memória/painel</span></div>` : ''}
+        ${primeiraFoto ? `<div style="margin-bottom:8px;"><img src="${primeiraFoto}" style="width:50px; height:50px; object-fit:cover; border-radius:6px; border:1px solid #34d399;" /> <span style="font-size:11px; color:var(--muted)">Foto principal pronta</span></div>` : '<div style="font-size:11px; color:var(--red); margin-bottom:6px;">⚠️ Este produto está sem foto cadastrada!</div>'}
         <div style="font-size:12px; color:var(--muted); margin-bottom:10px;">
           1️⃣ Texto copiado!<br>
-          2️⃣ Abra o grupo <b>${g.nome}</b>, cole o texto (Ctrl+V) junto com a foto e envie.<br>
+          2️⃣ Abra o grupo <b>${g.nome}</b>, cole (Ctrl+V) junto com a foto e envie.<br>
           3️⃣ Clique abaixo para ir para o <b>próximo grupo</b> deste mesmo produto.
         </div>
         <button class="btn btn-gold" style="padding:7px 14px;" onclick="avancarGrupoMutirao()">➡️ Já postei neste grupo, ir para o Próximo Grupo</button>
@@ -420,7 +444,6 @@
   function avancarGrupoMutirao() {
     if (!mutiraoRodando) return;
     idxGrp++;
-    // Se acabou os grupos, zera os grupos e passa para o PRÓXIMO PRODUTO
     if (idxGrp >= grupos.length) {
       idxGrp = 0;
       idxProd++;
